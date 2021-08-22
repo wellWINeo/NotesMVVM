@@ -1,0 +1,103 @@
+﻿<Window x:Class="NotesMVVM.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NotesMVVM" xmlns:local1="clr-namespace:NotesMVVM.View"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="400">
+    <Window.Resources>
+        <Style x:Key="DisblingTextBox" >
+            <Style.Triggers>
+                <Trigger Property="Control.DataContext" Value="{x:Null}">
+                    <Setter Property="Control.IsEnabled" Value="False"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="ShowSaveButton">
+            <Style.Triggers>
+                <Trigger Property="Control.DataContext" Value="{x:Null}">
+                    <Setter Property="Control.IsEnabled" Value="False" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <local1:BodyConverter x:Key="bodyConverter" />
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        
+        <!-- sidebar -->
+        <Rectangle x:Name="SideBarRect" Width="150" 
+                   Fill="LightGray" HorizontalAlignment="Stretch"
+                   Visibility="Visible"
+        />
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                <Button x:Name="CreateNewNote"
+                Content="New" Command="{Binding AddCommand}"
+                Width="75"/>
+                <Button x:Name="SaveNote"
+                Content="Save" Visibility="Visible"
+                DataContext="{Binding SelectedNote}"
+                Width="75" Style="{StaticResource ShowSaveButton}"/>
+            </StackPanel>
+
+            <ListView x:Name="NotesListView" Width="150" 
+                Background="Transparent" VerticalAlignment="Stretch"
+                Grid.Row="1"
+                ItemsSource="{Binding Notes}" SelectedItem="{Binding SelectedNote}"
+                VerticalContentAlignment="Top"
+                ScrollViewer.CanContentScroll="False"
+                ScrollViewer.VerticalScrollBarVisibility="Hidden">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <TextBlock FontWeight="Bold" Text="{Binding Path=Title}" />
+                            <TextBlock Text="{Binding Path=Body, Converter={StaticResource bodyConverter}}"/>
+                            <TextBlock FontWeight="UltraLight" Text="{Binding Path=Date}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Remove" Command="{Binding RemoveCommand}"/>
+                        <MenuItem Header="To top" Command="{Binding ToTopCommand}"/>
+                        <MenuItem Header="To bottom" Command="{Binding ToBottomCommand}"/>
+                    </ContextMenu>
+                </ListView.ContextMenu>
+            </ListView>
+        </Grid>
+
+        <!-- body -->
+        <Grid Grid.Column="1" DataContext="{Binding SelectedNote}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20"/>
+                <RowDefinition/>
+                <RowDefinition Height="15"/>
+            </Grid.RowDefinitions>
+
+            <TextBox Grid.Row="0" HorizontalAlignment="Stretch" 
+                     Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+                     Style="{StaticResource DisblingTextBox}"/>
+
+            <TextBox Grid.Row="1" TextWrapping="Wrap" 
+                     AcceptsReturn="True" 
+                     Text="{Binding Body, UpdateSourceTrigger=PropertyChanged}"
+                     Style="{StaticResource DisblingTextBox}"/>
+
+            <TextBlock Grid.Row="2" FontSize="10" FontWeight="Light"
+                       HorizontalAlignment="Right" Padding="0,0,10,0"
+                       Text="{Binding Date, StringFormat='r'}"/>
+        </Grid>
+    </Grid>
+</Window>
