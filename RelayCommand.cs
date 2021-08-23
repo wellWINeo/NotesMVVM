@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
 
-namespace NotesMVVM.Services.Commands
+namespace NotesMVVM
 {
     class RelayCommand : ICommand
     {

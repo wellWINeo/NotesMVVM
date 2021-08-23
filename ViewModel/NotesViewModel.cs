@@ -5,28 +5,41 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Collections.ObjectModel;
 using NotesMVVM.Model;
-using NotesMVVM.Services.Commands;
 using System.Windows;
+using NotesMVVM;
+
+using System.Data.Entity;
 
 namespace NotesMVVM.ViewModel
 {
     class NotesViewModel : INotifyPropertyChanged
     {
         private Note selectedNote;
-        public ObservableCollection<Note> Notes { get; set; }
+
+        private ApplicationContext db;
+
+        private IEnumerable<Note> notes;
+        public IEnumerable<Note> Notes
+        {
+            get { return notes; }
+            set
+            {
+                notes = value;
+                OnPropertyChanged("Notes");
+            }
+        }
 
         private RelayCommand addCommand;
         public RelayCommand AddCommand
         {
             get
             {
-                return addCommand ??
-                    (addCommand = new RelayCommand(obj =>
+                return addCommand ??= new RelayCommand(obj =>
                     {
                         var note = new Note("New note...");
-                        this.Notes.Insert(0, note);
-                        this.SelectedNote = note;
-                    }));
+                        db.Notes.Add(note);
+                        db.SaveChanges();
+                    });
             }
         }
 
@@ -35,12 +48,12 @@ namespace NotesMVVM.ViewModel
         {
             get
             {
-                return removeCommand ??
-                    (removeCommand = new RelayCommand(obj =>
+                return removeCommand ??= new RelayCommand(obj =>
                     {
-                        this.Notes.Remove(this.SelectedNote);
-                        this.SelectedNote = null;
-                    }));
+                        db.Notes.Remove(SelectedNote);
+                        SelectedNote = null;
+                        db.SaveChanges();
+                    });
             }
         }
 
@@ -52,7 +65,7 @@ namespace NotesMVVM.ViewModel
                 return toTopCommand ??
                     (toTopCommand = new RelayCommand(obj =>
                     {
-                        this.Notes.Move(Notes.IndexOf(SelectedNote), 0);
+                        //this.Notes.Move(Notes.IndexOf(SelectedNote), 0);
                     }));
             }
         }
@@ -65,8 +78,8 @@ namespace NotesMVVM.ViewModel
                 return toBottomCommand ??
                     (toBottomCommand= new RelayCommand(obj =>
                     {
-                        this.Notes.Move(Notes.IndexOf(SelectedNote), 
-                            Notes.Count - 1);
+                        //this.Notes.Move(Notes.IndexOf(SelectedNote), 
+                        //    Notes.Count - 1);
                     }));
             }
         }
@@ -78,6 +91,7 @@ namespace NotesMVVM.ViewModel
             {
                 if (value != this.selectedNote)
                 {
+                    db.SaveChanges();
                     this.selectedNote = value;
                     OnPropertyChanged("selectedNote");
                 }
@@ -90,14 +104,12 @@ namespace NotesMVVM.ViewModel
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
 
+        // Constructor
         public NotesViewModel()
         {
-            this.Notes = new ObservableCollection<Note>()
-            {
-                new Note("Yet"),
-                new Note("Another"),
-                new Note("new note")
-            };
+            db = new ApplicationContext();
+            db.Notes.Load();
+            Notes = db.Notes.Local.ToBindingList();
         }
 
     }

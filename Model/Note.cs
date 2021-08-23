@@ -3,16 +3,21 @@ using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace NotesMVVM.Model
 {
-    class Note : INotifyPropertyChanged
+    [Table("Notes")]
+    public class Note : INotifyPropertyChanged
     {
         // internal
         private string title;
         private string body;
-        
+
         // external
+        [Key]
+        public int Id { get; set; }
         public string Title
         {
             get { return this.title;  }
@@ -38,8 +43,8 @@ namespace NotesMVVM.Model
                 }
             }
         }
-        
-        public DateTime Date { get; }
+
+        public DateTime Date { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void OnPropertyChanged([CallerMemberName] string prop = "")
@@ -53,5 +58,7 @@ namespace NotesMVVM.Model
             this.body = body;
             this.Date = DateTime.Now;
         }
+
+        public Note() { }
     }
 }
